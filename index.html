@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Q&A App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px;
+            min-height: 600px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .upload-area {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-area:hover {
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .question-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question-input {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .ask-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .ask-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .ask-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .response-area {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #4facfe;
+            min-height: 150px;
+            overflow-y: auto;
+        }
+
+        .response-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .response-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #343a40;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #dee2e6;
+            border-top: 2px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-icon {
+                font-size: 3rem;
+            }
+        }
+
+        .api-config {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Image Q&A Assistant</h1>
+            <p>Upload an image and ask questions about it using AI</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="api-config">
+                    <label for="apiKey"><strong>API Key:</strong></label>
+                    <input type="password" id="apiKey" class="api-input" placeholder="Enter your Google Gemini API key">
+                    <small style="display: block; margin-top: 5px; color: #6c757d;">
+                        Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                    </small>
+                </div>
+                
+                <div class="upload-area" onclick="document.getElementById('imageInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click to upload an image</div>
+                    <div class="upload-subtext">Supports JPG, PNG, GIF, WebP</div>
+                </div>
+                <input type="file" id="imageInput" class="file-input" accept="image/*">
+                
+                <div id="previewContainer" class="preview-container" style="display: none;">
+                    <img id="previewImage" class="preview-image" alt="Preview">
+                    <br>
+                    <button class="remove-btn" onclick="removeImage()">Remove Image</button>
+                </div>
+            </div>
+            
+            <div class="question-section">
+                <textarea 
+                    id="questionInput" 
+                    class="question-input" 
+                    placeholder="Ask a question about the uploaded image...&#10;&#10;Examples:&#10;• What do you see in this image?&#10;• Describe the main objects&#10;• What colors are dominant?&#10;• What's happening in this scene?"
+                ></textarea>
+                
+                <button id="askBtn" class="ask-btn" onclick="askQuestion()" disabled>
+                    Ask Question
+                </button>
+                
+                <div id="responseArea" class="response-area" style="display: none;">
+                    <div class="response-title">AI Response:</div>
+                    <div id="responseText" class="response-text"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedImage = null;
+        let imageBase64 = null;
+
+        // Initialize event listeners
+        document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+        document.getElementById('questionInput').addEventListener('input', updateAskButton);
+        document.getElementById('apiKey').addEventListener('input', updateAskButton);
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                showError('Please upload a valid image file (JPG, PNG, GIF, or WebP)');
+                return;
+            }
+
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('Image size must be less than 10MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedImage = file;
+                imageBase64 = e.target.result.split(',')[1]; // Remove data:image/xxx;base64, prefix
+                
+                // Show preview
+                const previewImage = document.getElementById('previewImage');
+                const previewContainer = document.getElementById('previewContainer');
+                
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                
+                updateAskButton();
+                hideError();
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage() {
+            uploadedImage = null;
+            imageBase64 = null;
+            document.getElementById('previewContainer').style.display = 'none';
+            document.getElementById('imageInput').value = '';
+            document.getElementById('responseArea').style.display = 'none';
+            updateAskButton();
+        }
+
+        function updateAskButton() {
+            const hasImage = uploadedImage !== null;
+            const hasQuestion = document.getElementById('questionInput').value.trim() !== '';
+            const hasApiKey = document.getElementById('apiKey').value.trim() !== '';
+            
+            document.getElementById('askBtn').disabled = !(hasImage && hasQuestion && hasApiKey);
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!uploadedImage || !question || !apiKey) {
+                showError('Please upload an image, enter a question, and provide an API key');
+                return;
+            }
+
+            const responseArea = document.getElementById('responseArea');
+            const responseText = document.getElementById('responseText');
+            
+            // Show loading state
+            responseArea.style.display = 'block';
+            responseText.innerHTML = '<div class="loading"><div class="spinner"></div>Analyzing image...</div>';
+            document.getElementById('askBtn').disabled = true;
+
+            try {
+                // Simulate the Google Gemini API call
+                const response = await callGeminiAPI(apiKey, imageBase64, uploadedImage.type, question);
+                
+                if (response.success) {
+                    responseText.innerHTML = `<div class="success">✅ Analysis Complete</div><br>${response.text}`;
+                } else {
+                    throw new Error(response.error || 'Failed to analyze image');
+                }
+            } catch (error) {
+                responseText.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('Error:', error);
+            } finally {
+                updateAskButton();
+            }
+        }
+
+        async function callGeminiAPI(apiKey, imageData, mimeType, question) {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                {
+                                    inline_data: {
+                                        mime_type: mimeType,
+                                        data: imageData
+                                    }
+                                },
+                                {
+                                    text: question
+                                }
+                            ]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `API request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+                    return {
+                        success: true,
+                        text: data.candidates[0].content.parts[0].text
+                    };
+                } else {
+                    throw new Error('Unexpected response format from API');
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        function showError(message) {
+            const responseArea = document.getElementById('responseArea');
+            const responseText = document.getElementById('responseText');
+            
+            responseArea.style.display = 'block';
+            responseText.innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+
+        function hideError() {
+            // Only hide if showing an error
+            const responseText = document.getElementById('responseText');
+            if (responseText.innerHTML.includes('error')) {
+                document.getElementById('responseArea').style.display = 'none';
+            }
+        }
+
+        // Add some example questions
+        const exampleQuestions = [
+            "What do you see in this image?",
+            "Describe the main objects and their colors",
+            "What's happening in this scene?",
+            "Can you identify any text in this image?",
+            "What is the mood or atmosphere of this image?",
+            "Are there any people in this image? What are they doing?",
+            "What time of day does this appear to be taken?",
+            "What architectural or design elements do you notice?"
+        ];
+
+        // Add click handler for example questions
+        document.getElementById('questionInput').addEventListener('focus', function() {
+            if (this.value === '') {
+                const randomExample = exampleQuestions[Math.floor(Math.random() * exampleQuestions.length)];
+                this.placeholder = `Try asking: "${randomExample}"`;
+            }
+        });
+    </script>
+</body>
+</html>
